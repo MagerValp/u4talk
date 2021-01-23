@@ -9,6 +9,7 @@ TALK=( \
     talk_C64.json \
     talk_Apple2.json \
     talk_Apple2_old.json \
+	talk_SMS.json \
 )
 
 

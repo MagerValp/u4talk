@@ -13,11 +13,14 @@ def print8(*args):
     print " ".join(unicode(x).encode(u"utf-8") for x in args)
 
 
-def compare(key, first, other, case=False, maxlen=4):
+def compare(key, first, other, case=False, maxlen=4, exclude_line_endings=False):
     if key in (u"keyword_1", u"keyword_2"):
         return first[:maxlen].upper() == other[:maxlen].upper()
     else:
         if isinstance(first, basestring) and isinstance(other, basestring):
+            if exclude_line_endings:
+                other = other.replace('\n', ' ')
+                first = first.replace('\n', ' ')
             if case:
                 return other == first
             else:
@@ -97,6 +100,7 @@ def main(argv):
     args = p.parse_args([x.decode(u"utf-8") for x in argv[1:]])
     
     compare_case = list()
+    exclude_line_endings = list()
     talks = list()
     for num, talk in enumerate(args.json_talks):
         with open(talk, u"rb") as f:
@@ -108,6 +112,8 @@ def main(argv):
                     chars |= set(c for c in name)
                 charset = u"".join(sorted(chars))
                 compare_case.append(u"abc" in charset)
+                exclude_line_endings.append(u"sms" in talk)
+                
     
     print8(u"""<!DOCTYPE html>
 <html>
@@ -185,7 +191,7 @@ table.talk td, th {
                     continue
             first = convs[0][key]
             rest = [u"<td>%s</td>" % cgi.escape(unicode(c[key])) \
-                        if compare(key, first, c[key], compare_case[num], args.len) else \
+                        if compare(key, first, c[key], compare_case[num], args.len, exclude_line_endings) else \
                     u'<td class="diff">%s</td>' % cgi.escape(unicode(c[key])) \
                         for num, c in enumerate(convs[1:])]
                 
